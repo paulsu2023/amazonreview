@@ -68,8 +68,14 @@ const unlockAdmin = document.querySelector("#unlockAdmin");
 const adminStatus = document.querySelector("#adminStatus");
 const storageKey = "realPeopleFeedbackCampaigns";
 const uploadKey = "ttxs";
+const supabaseUrl = "https://txxvtmpheepjjoqcctyg.supabase.co";
+const supabaseKey = "sb_publishable_2SWxCVIq7uPeY23b5eoPpA_oSI2H9AI";
 
 let campaigns = [...seedCampaigns, ...loadStoredCampaigns()];
+
+function hasSupabaseConfig() {
+  return supabaseUrl.startsWith("https://") && supabaseKey.length > 20;
+}
 
 function loadStoredCampaigns() {
   try {
@@ -77,6 +83,77 @@ function loadStoredCampaigns() {
   } catch {
     return [];
   }
+}
+
+function fromSupabaseCampaign(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    duration: row.duration,
+    fit: row.fit,
+    description: row.description,
+    productLink: row.product_link || "",
+    keywords: row.keywords || "",
+    imageData: row.image_data || "",
+    artClass: "art-organizer",
+    isRemote: true,
+    requirements: [
+      "Use the product naturally during the testing period",
+      "Share your real experience about quality, packaging, and usability",
+      "Never submit fake, scripted, or copied reviews"
+    ]
+  };
+}
+
+async function supabaseRequest(path, options = {}) {
+  const response = await fetch(`${supabaseUrl}${path}`, {
+    ...options,
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Supabase request failed: ${response.status}`);
+  }
+
+  return response.status === 204 ? null : response.json();
+}
+
+async function loadRemoteCampaigns() {
+  if (!hasSupabaseConfig()) return;
+  try {
+    const rows = await supabaseRequest("/rest/v1/campaigns?select=*&active=eq.true&order=created_at.desc");
+    const remoteCampaigns = rows.map(fromSupabaseCampaign);
+    const localCampaigns = loadStoredCampaigns();
+    campaigns = [...remoteCampaigns, ...seedCampaigns, ...localCampaigns];
+    renderCampaigns(document.querySelector(".filter.is-active").dataset.filter);
+  } catch (error) {
+    console.warn("Using local campaigns because Supabase load failed.", error);
+  }
+}
+
+async function addRemoteCampaign(uploadKeyValue, campaign) {
+  const row = await supabaseRequest("/rest/v1/rpc/add_campaign", {
+    method: "POST",
+    body: JSON.stringify({
+      p_upload_key: uploadKeyValue,
+      p_title: campaign.title,
+      p_category: campaign.category,
+      p_duration: campaign.duration,
+      p_fit: campaign.fit,
+      p_description: campaign.description,
+      p_product_link: campaign.productLink || null,
+      p_keywords: campaign.keywords || null,
+      p_image_data: campaign.imageData || null
+    })
+  });
+  return fromSupabaseCampaign(Array.isArray(row) ? row[0] : row);
 }
 
 function saveStoredCampaigns() {
@@ -215,7 +292,7 @@ productForm.addEventListener("submit", async (event) => {
   const productLink = data.get("productLink").toString().trim();
   const keywords = data.get("productKeywords").toString().trim();
 
-  campaigns.unshift({
+  const newCampaign = {
     title: productName,
     category,
     duration,
@@ -231,12 +308,26 @@ productForm.addEventListener("submit", async (event) => {
       "Share your real experience about quality, packaging, and usability",
       "Never submit fake, scripted, or copied reviews"
     ]
-  });
+  };
 
-  saveStoredCampaigns();
+  try {
+    const remoteCampaign = hasSupabaseConfig()
+      ? await addRemoteCampaign(uploadKey, newCampaign)
+      : null;
+    campaigns.unshift(remoteCampaign || newCampaign);
+    productStatus.textContent = remoteCampaign
+      ? "Campaign saved to Supabase. It is now visible to everyone."
+      : "Campaign added to this browser. Supabase is not configured.";
+  } catch (error) {
+    console.warn("Supabase upload failed; saving locally.", error);
+    campaigns.unshift(newCampaign);
+    saveStoredCampaigns();
+    productStatus.textContent = "Supabase upload failed, so this campaign was saved in this browser only.";
+  }
+
   renderCampaigns(document.querySelector(".filter.is-active").dataset.filter);
-  productStatus.textContent = "Campaign added to this browser. It is now visible in Current Product Campaigns.";
   productForm.reset();
 });
 
 renderCampaigns();
+loadRemoteCampaigns();
