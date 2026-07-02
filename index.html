@@ -133,8 +133,9 @@
                 <input name="productName" placeholder="e.g. Silicone Food Storage Bags" required />
               </label>
               <label>
-                Category
+                Category (optional)
                 <select name="productCategory">
+                  <option value="">No category</option>
                   <option>Home</option>
                   <option>Kitchen</option>
                   <option>Electronics</option>
@@ -171,6 +172,7 @@
               <span>I will not ask testers to search by keyword, leave public reviews, or provide a specific rating.</span>
             </label>
             <button class="button primary" type="submit">Add Campaign</button>
+            <button class="button secondary is-hidden" id="cancelEdit" type="button">Cancel Edit</button>
             <p class="form-status" id="productStatus" role="status" aria-live="polite"></p>
           </form>
           <aside class="manager-note">
@@ -184,6 +186,11 @@
               database with an admin login.
             </p>
           </aside>
+        </div>
+        <div id="campaignManager" class="campaign-manager is-hidden" aria-label="Product management list">
+          <h3>Manage Products</h3>
+          <p>Edit or remove products saved in Supabase. Deleted products are hidden from buyers.</p>
+          <div id="managerList" class="manager-list"></div>
         </div>
       </section>
 

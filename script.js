@@ -62,6 +62,9 @@ const dialogContent = document.querySelector("#dialogContent");
 const closeDialog = document.querySelector(".dialog-close");
 const productForm = document.querySelector("#productForm");
 const productStatus = document.querySelector("#productStatus");
+const cancelEdit = document.querySelector("#cancelEdit");
+const campaignManager = document.querySelector("#campaignManager");
+const managerList = document.querySelector("#managerList");
 const adminGate = document.querySelector("#adminGate");
 const adminKey = document.querySelector("#adminKey");
 const unlockAdmin = document.querySelector("#unlockAdmin");
@@ -72,6 +75,8 @@ const supabaseUrl = "https://txxvtmpheepjjoqcctyg.supabase.co";
 const supabaseKey = "sb_publishable_2SWxCVIq7uPeY23b5eoPpA_oSI2H9AI";
 
 let campaigns = [...seedCampaigns, ...loadStoredCampaigns()];
+let remoteCampaigns = [];
+let editingCampaignId = null;
 
 function hasSupabaseConfig() {
   return supabaseUrl.startsWith("https://") && supabaseKey.length > 20;
@@ -89,7 +94,7 @@ function fromSupabaseCampaign(row) {
   return {
     id: row.id,
     title: row.title,
-    category: row.category,
+    category: row.category || "",
     duration: row.duration,
     fit: row.fit,
     description: row.description,
@@ -129,10 +134,11 @@ async function loadRemoteCampaigns() {
   if (!hasSupabaseConfig()) return;
   try {
     const rows = await supabaseRequest("/rest/v1/campaigns?select=*&active=eq.true&order=created_at.desc");
-    const remoteCampaigns = rows.map(fromSupabaseCampaign);
+    remoteCampaigns = rows.map(fromSupabaseCampaign);
     const localCampaigns = loadStoredCampaigns();
     campaigns = [...remoteCampaigns, ...seedCampaigns, ...localCampaigns];
     renderCampaigns(document.querySelector(".filter.is-active").dataset.filter);
+    renderManagerList();
   } catch (error) {
     console.warn("Using local campaigns because Supabase load failed.", error);
   }
@@ -154,6 +160,35 @@ async function addRemoteCampaign(uploadKeyValue, campaign) {
     })
   });
   return fromSupabaseCampaign(Array.isArray(row) ? row[0] : row);
+}
+
+async function updateRemoteCampaign(uploadKeyValue, campaign) {
+  const row = await supabaseRequest("/rest/v1/rpc/update_campaign", {
+    method: "POST",
+    body: JSON.stringify({
+      p_upload_key: uploadKeyValue,
+      p_id: campaign.id,
+      p_title: campaign.title,
+      p_category: campaign.category || null,
+      p_duration: campaign.duration,
+      p_fit: campaign.fit,
+      p_description: campaign.description,
+      p_product_link: campaign.productLink || null,
+      p_keywords: campaign.keywords || null,
+      p_image_data: campaign.imageData || null
+    })
+  });
+  return fromSupabaseCampaign(Array.isArray(row) ? row[0] : row);
+}
+
+async function deleteRemoteCampaign(uploadKeyValue, id) {
+  await supabaseRequest("/rest/v1/rpc/delete_campaign", {
+    method: "POST",
+    body: JSON.stringify({
+      p_upload_key: uploadKeyValue,
+      p_id: id
+    })
+  });
 }
 
 function saveStoredCampaigns() {
@@ -193,7 +228,7 @@ function renderCampaigns(category = "all") {
             <h3>${escapeHtml(item.title)}</h3>
             <p>${escapeHtml(item.description)}</p>
             <ul class="meta-list">
-              <li>${escapeHtml(item.category)}</li>
+              <li>${escapeHtml(item.category || "General")}</li>
               <li>${escapeHtml(item.duration)}</li>
               <li>${escapeHtml(item.fit)}</li>
             </ul>
@@ -216,7 +251,7 @@ function openCampaign(index) {
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.description)}</p>
         <ul>
-          <li><strong>Category:</strong> ${escapeHtml(item.category)}</li>
+          <li><strong>Category:</strong> ${escapeHtml(item.category || "General")}</li>
           <li><strong>Testing period:</strong> ${escapeHtml(item.duration)}</li>
           <li><strong>Best fit:</strong> ${escapeHtml(item.fit)}</li>
           ${item.productLink ? `<li><strong>Product link:</strong> <a href="${escapeHtml(item.productLink)}" target="_blank" rel="noreferrer">Open product page</a></li>` : ""}
@@ -262,8 +297,96 @@ unlockAdmin.addEventListener("click", () => {
     return;
   }
   productForm.classList.remove("is-hidden");
+  campaignManager.classList.remove("is-hidden");
   adminGate.classList.add("is-hidden");
   productStatus.textContent = "Upload access unlocked for this browser session.";
+  renderManagerList();
+});
+
+function renderManagerList() {
+  if (!managerList) return;
+
+  if (!remoteCampaigns.length) {
+    managerList.innerHTML = `<p class="form-status">No Supabase products yet. Add one with the form above.</p>`;
+    return;
+  }
+
+  managerList.innerHTML = remoteCampaigns
+    .map(
+      (item) => `
+        <article class="manager-row">
+          <div>
+            <h4>${escapeHtml(item.title)}</h4>
+            <p>${escapeHtml(item.category || "General")} · ${escapeHtml(item.duration)} · ${escapeHtml(item.fit)}</p>
+          </div>
+          <div class="manager-actions">
+            <button class="button secondary" type="button" data-edit="${escapeHtml(item.id)}">Edit</button>
+            <button class="button danger" type="button" data-delete="${escapeHtml(item.id)}">Delete</button>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function setEditMode(item) {
+  editingCampaignId = item.id;
+  productForm.productName.value = item.title;
+  productForm.productCategory.value = item.category || "";
+  productForm.productLink.value = item.productLink || "";
+  productForm.productDuration.value = item.duration;
+  productForm.productFit.value = item.fit;
+  productForm.productKeywords.value = item.keywords || "";
+  productForm.productDescription.value = item.description;
+  productForm.querySelector(".check input").checked = true;
+  productForm.querySelector('button[type="submit"]').textContent = "Update Campaign";
+  cancelEdit.classList.remove("is-hidden");
+  productStatus.textContent = "Editing existing product. Upload a new screenshot only if you want to replace the old one.";
+  productForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function clearEditMode() {
+  editingCampaignId = null;
+  productForm.reset();
+  productForm.querySelector('button[type="submit"]').textContent = "Add Campaign";
+  cancelEdit.classList.add("is-hidden");
+}
+
+cancelEdit.addEventListener("click", () => {
+  clearEditMode();
+  productStatus.textContent = "Edit cancelled.";
+});
+
+managerList.addEventListener("click", async (event) => {
+  const editButton = event.target.closest("[data-edit]");
+  const deleteButton = event.target.closest("[data-delete]");
+
+  if (editButton) {
+    const item = remoteCampaigns.find((campaign) => campaign.id === editButton.dataset.edit);
+    if (item) setEditMode(item);
+    return;
+  }
+
+  if (!deleteButton) return;
+
+  const item = remoteCampaigns.find((campaign) => campaign.id === deleteButton.dataset.delete);
+  if (!item) return;
+
+  const confirmed = window.confirm(`Delete "${item.title}" from the public product list?`);
+  if (!confirmed) return;
+
+  try {
+    await deleteRemoteCampaign(uploadKey, item.id);
+    remoteCampaigns = remoteCampaigns.filter((campaign) => campaign.id !== item.id);
+    campaigns = campaigns.filter((campaign) => campaign.id !== item.id);
+    renderCampaigns(document.querySelector(".filter.is-active").dataset.filter);
+    renderManagerList();
+    productStatus.textContent = "Product deleted from Supabase.";
+    await loadRemoteCampaigns();
+  } catch (error) {
+    console.error(error);
+    productStatus.textContent = "Delete failed. Check the upload key or Supabase connection.";
+  }
 });
 
 function readImageAsDataUrl(file) {
@@ -293,6 +416,7 @@ productForm.addEventListener("submit", async (event) => {
   const keywords = data.get("productKeywords").toString().trim();
 
   const newCampaign = {
+    id: editingCampaignId,
     title: productName,
     category,
     duration,
@@ -312,11 +436,23 @@ productForm.addEventListener("submit", async (event) => {
 
   try {
     const remoteCampaign = hasSupabaseConfig()
-      ? await addRemoteCampaign(uploadKey, newCampaign)
+      ? editingCampaignId
+        ? await updateRemoteCampaign(uploadKey, newCampaign)
+        : await addRemoteCampaign(uploadKey, newCampaign)
       : null;
-    campaigns.unshift(remoteCampaign || newCampaign);
+    if (editingCampaignId && remoteCampaign) {
+      remoteCampaigns = remoteCampaigns.map((item) => item.id === remoteCampaign.id ? remoteCampaign : item);
+      campaigns = campaigns.map((item) => item.id === remoteCampaign.id ? remoteCampaign : item);
+    } else if (remoteCampaign) {
+      remoteCampaigns.unshift(remoteCampaign);
+      campaigns.unshift(remoteCampaign);
+    } else {
+      campaigns.unshift(newCampaign);
+    }
     productStatus.textContent = remoteCampaign
-      ? "Campaign saved to Supabase. It is now visible to everyone."
+      ? editingCampaignId
+        ? "Campaign updated in Supabase."
+        : "Campaign saved to Supabase. It is now visible to everyone."
       : "Campaign added to this browser. Supabase is not configured.";
   } catch (error) {
     console.warn("Supabase upload failed; saving locally.", error);
@@ -326,7 +462,8 @@ productForm.addEventListener("submit", async (event) => {
   }
 
   renderCampaigns(document.querySelector(".filter.is-active").dataset.filter);
-  productForm.reset();
+  renderManagerList();
+  clearEditMode();
 });
 
 renderCampaigns();
