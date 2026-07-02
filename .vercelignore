@@ -1,0 +1,9 @@
+_qa/
+_references/
+_video_work/
+outputs/
+scripts/
+assets/video/
+node_modules/
+*.log
+.env*
