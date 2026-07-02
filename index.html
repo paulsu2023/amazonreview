@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Real People Feedback | Product Testing Panel</title>
+    <meta
+      name="description"
+      content="Apply to test new products at home and share private, voluntary feedback with product teams."
+    />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Real People Feedback home">
+        <span class="brand-mark">R</span>
+        <span>
+          <strong>Real People Feedback</strong>
+          <small>Product testing by everyday consumers</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#how">How It Works</a>
+        <a href="#campaigns">Campaigns</a>
+        <a href="#review-info">Review Info</a>
+        <a href="#amazon-profile">Amazon Profile</a>
+        <a href="#trust">Trust</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="header-cta" href="#apply">Apply Now</a>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Try new products safely. Share your real experience.</h1>
+          <p>
+            We invite real US consumers to test new products at home. Your honest
+            Amazon review, based on real use, helps other shoppers understand the
+            product and helps our small business improve.
+          </p>
+          <div class="hero-points" aria-label="Program highlights">
+            <div>
+              <span class="point-icon" aria-hidden="true">◎</span>
+              <strong>Free product opportunities</strong>
+              <small>Selected testers receive product access or reimbursement details before joining.</small>
+            </div>
+            <div>
+              <span class="point-icon" aria-hidden="true">□</span>
+              <strong>PayPal or gift card support</strong>
+              <small>Campaign support is handled clearly by message and never depends on a rating.</small>
+            </div>
+            <div>
+              <span class="point-icon" aria-hidden="true">✓</span>
+              <strong>Real reviews matter to us</strong>
+              <small>After real use, honest public opinions help other shoppers and help us improve.</small>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="#apply">Apply to Be a Tester</a>
+            <a class="button text-link" href="#how">See how it works</a>
+          </div>
+        </div>
+        <div class="hero-media" aria-label="Tester opening a new product package">
+          <img
+            src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1200&q=82"
+            alt="A person opening a product package at home"
+          />
+        </div>
+      </section>
+
+      <section id="review-info" class="section review-info" aria-labelledby="review-info-title">
+        <div class="section-heading">
+          <h2 id="review-info-title">What This Is About</h2>
+          <p>We work with real shoppers who can try products and share honest, real-use opinions.</p>
+        </div>
+        <div class="info-grid">
+          <article>
+            <h3>What is an Amazon review?</h3>
+            <p>An Amazon review is a public opinion from a shopper about what the product is really like after use: quality, size, comfort, setup, packaging, and value.</p>
+          </article>
+          <article>
+            <h3>Why do reviews matter?</h3>
+            <p>For a new product, real reviews help buyers make decisions. They also help us find unclear instructions, quality issues, or details we should improve.</p>
+          </article>
+          <article>
+            <h3>What can testers receive?</h3>
+            <p>Selected testers may receive a free product opportunity or campaign support through PayPal or Amazon gift card, confirmed clearly before participation.</p>
+          </article>
+          <article>
+            <h3>Why is it safe?</h3>
+            <p>You can contact us through WhatsApp, Facebook, email, or Instagram. We confirm details before you join, and eligible Amazon orders still follow Amazon's normal return options.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="campaigns" class="section campaigns" aria-labelledby="campaign-title">
+        <div class="section-heading">
+          <h2 id="campaign-title">Current Product Campaigns</h2>
+          <p>Choose campaigns that genuinely fit your home, habits, and interests.</p>
+        </div>
+        <div class="filter-row" aria-label="Campaign filters">
+          <button class="filter is-active" type="button" data-filter="all">All</button>
+          <button class="filter" type="button" data-filter="Home">Home</button>
+          <button class="filter" type="button" data-filter="Kitchen">Kitchen</button>
+          <button class="filter" type="button" data-filter="Electronics">Electronics</button>
+          <button class="filter" type="button" data-filter="Wellness">Wellness</button>
+        </div>
+        <div class="campaign-grid" id="campaignGrid"></div>
+      </section>
+
+      <section id="post-product" class="section product-manager" aria-labelledby="post-product-title">
+        <div class="section-heading">
+          <h2 id="post-product-title">Post a Product Campaign</h2>
+          <p>Seller access only. Enter the upload key to add or update product campaigns.</p>
+        </div>
+        <div class="admin-gate" id="adminGate">
+          <label>
+            Upload Key
+            <input id="adminKey" type="password" autocomplete="current-password" placeholder="Enter upload key" />
+          </label>
+          <button class="button primary" id="unlockAdmin" type="button">Unlock Upload</button>
+          <p class="form-status" id="adminStatus" role="status" aria-live="polite"></p>
+        </div>
+        <div class="manager-layout">
+          <form id="productForm" class="application manager-form is-hidden" aria-label="Post product campaign">
+            <h3>Product Information</h3>
+            <div class="form-grid">
+              <label>
+                Product Name
+                <input name="productName" placeholder="e.g. Silicone Food Storage Bags" required />
+              </label>
+              <label>
+                Category
+                <select name="productCategory">
+                  <option>Home</option>
+                  <option>Kitchen</option>
+                  <option>Electronics</option>
+                  <option>Wellness</option>
+                </select>
+              </label>
+              <label class="wide">
+                Product Link (optional)
+                <input name="productLink" type="url" placeholder="https://www.amazon.com/dp/..." />
+              </label>
+              <label class="wide">
+                Product Screenshot
+                <input name="productImage" type="file" accept="image/*" />
+              </label>
+              <label>
+                Testing Period
+                <input name="productDuration" placeholder="1-2 weeks" required />
+              </label>
+              <label>
+                Best Fit
+                <input name="productFit" placeholder="Families, office users, travelers..." required />
+              </label>
+              <label class="wide">
+                Internal Keywords / Matching Terms
+                <input name="productKeywords" placeholder="Used only for internal matching, not tester search instructions" />
+              </label>
+              <label class="wide">
+                Product Description
+                <textarea name="productDescription" rows="4" placeholder="What should testers try, observe, and privately report?" required></textarea>
+              </label>
+            </div>
+            <label class="check">
+              <input type="checkbox" required />
+              <span>I will not ask testers to search by keyword, leave public reviews, or provide a specific rating.</span>
+            </label>
+            <button class="button primary" type="submit">Add Campaign</button>
+            <p class="form-status" id="productStatus" role="status" aria-live="polite"></p>
+          </form>
+          <aside class="manager-note">
+            <h3>What buyers will see</h3>
+            <p>
+              Buyers see the product name, image, category, fit, testing period, and real-use expectations.
+              Internal keywords are saved in the browser for your reference but are not shown as ordering instructions.
+            </p>
+            <p>
+              This demo stores added products in this browser only. A production version should save them to a secure
+              database with an admin login.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="how" class="section process" aria-labelledby="how-title">
+        <div class="simple-process">
+          <div>
+            <h2 id="how-title">How It Works</h2>
+            <p class="lead">
+              Three simple steps. Join the group, try the product, then share your real experience after use.
+            </p>
+            <ol class="steps">
+              <li>
+                <span>1</span>
+                <strong>Apply</strong>
+                <p>Pick a product and join our WhatsApp or Facebook group.</p>
+              </li>
+              <li>
+                <span>2</span>
+                <strong>Try it at home</strong>
+                <p>If selected, we confirm the product and support details, then stay available for questions.</p>
+              </li>
+              <li>
+                <span>3</span>
+                <strong>Share a real review</strong>
+                <p>After real use, share your honest experience in your own words.</p>
+              </li>
+            </ol>
+          </div>
+          <img src="./assets/how-it-works.png" alt="Three-step product testing process illustration" />
+        </div>
+      </section>
+
+      <section id="trust" class="trust-band" aria-labelledby="trust-title">
+        <div>
+          <h2 id="trust-title">Safe. Respectful. Private.</h2>
+          <p>
+            We keep communication clear before you participate. We never ask for passwords,
+            order account access, fake reviews, copied text, or a specific star rating.
+          </p>
+        </div>
+        <div id="contact" class="contact-panel" aria-label="Contact options">
+          <a href="https://wa.me/8618713517832">WhatsApp<br /><small>+86 18713517832</small></a>
+          <a href="https://www.facebook.com/groups/359125972509563">Facebook Group<br /><small>Join the group</small></a>
+          <a href="mailto:hello@realpeoplefeedback.com">Email<br /><small>hello@realpeoplefeedback.com</small></a>
+          <a href="https://instagram.com/">Instagram<br /><small>@realpeoplefeedback</small></a>
+        </div>
+      </section>
+
+      <section id="amazon-profile" class="section profile-section" aria-labelledby="profile-title">
+        <div class="profile-layout">
+          <div>
+            <h2 id="profile-title">How to Find Your Amazon Profile</h2>
+            <p>
+              After you join the WhatsApp or Facebook group, we may ask you to send your Amazon public profile
+              so we can verify you are a real Amazon shopper. Do not send your password, order details, or payment information.
+            </p>
+            <ol class="profile-steps">
+              <li>Sign in to Amazon and open <a href="https://www.amazon.com/gp/profile" target="_blank" rel="noreferrer">amazon.com/gp/profile</a>.</li>
+              <li>If that does not open directly, go to Account and look for Your Profile.</li>
+              <li>Open your public profile page, copy the browser address, and send that link to us.</li>
+            </ol>
+          </div>
+          <img src="./assets/amazon-profile-guide.png" alt="How to find and copy an Amazon public profile link" />
+        </div>
+      </section>
+
+      <section class="section split" aria-label="FAQ and group links">
+        <div id="faq" class="faq">
+          <h2>Frequently Asked Questions</h2>
+          <details open>
+            <summary>Why are real product reviews important?</summary>
+            <p>Real reviews help shoppers understand the product and help us improve quality, packaging, sizing, and instructions. We only want your honest experience after you actually use the product.</p>
+          </details>
+          <details>
+            <summary>Is there any cost to join?</summary>
+            <p>No application fee. Selected testers receive product access for the campaign they join.</p>
+          </details>
+          <details>
+            <summary>How are testers selected?</summary>
+            <p>We match based on product fit, location, availability, and previous testing reliability.</p>
+          </details>
+          <details>
+            <summary>Do I need to submit my address here?</summary>
+            <p>No. This page does not collect your address or profile information. Product details and next steps are handled through our WhatsApp or Facebook group.</p>
+          </details>
+          <details>
+            <summary>Why do you ask for social and Amazon profile links?</summary>
+            <p>We no longer collect them on this page. After you join the group, send your Amazon public profile to us directly following the group instructions. Never share passwords, order details, or payment information.</p>
+          </details>
+          <details>
+            <summary>Can I apply for multiple campaigns?</summary>
+            <p>Yes, but we may limit active campaigns per tester so feedback quality stays high.</p>
+          </details>
+        </div>
+
+        <div id="apply" class="application join-card" aria-labelledby="apply-title">
+          <h2 id="apply-title">Join the Product Testing Group</h2>
+          <p>Click one of the links below. After joining, send your Amazon public profile to us directly in the group or private message.</p>
+          <div class="join-actions" aria-label="Join group links">
+            <a class="button primary" href="https://wa.me/8618713517832" target="_blank" rel="noreferrer">Join WhatsApp</a>
+            <a class="button secondary" href="https://www.facebook.com/groups/359125972509563" target="_blank" rel="noreferrer">Join Facebook Group</a>
+          </div>
+          <p class="join-note">No forms here. We will handle product details, PayPal information, and Amazon profile verification after you join.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <strong>Real People Feedback</strong>
+        <p>Connecting everyday consumers with brands to improve new products.</p>
+      </div>
+      <div>
+        <strong>Quick Links</strong>
+        <a href="#how">How It Works</a>
+        <a href="#campaigns">Current Campaigns</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div>
+        <strong>Compliance Note</strong>
+        <p>Product testing here is for real use and honest experience sharing. We never ask for fake, scripted, or controlled reviews.</p>
+      </div>
+    </footer>
+
+    <dialog id="campaignDialog" class="dialog">
+      <button class="dialog-close" type="button" aria-label="Close campaign details">×</button>
+      <div id="dialogContent"></div>
+    </dialog>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+_qa/
+_references/
+.vercel/
+node_modules/
+*.log
