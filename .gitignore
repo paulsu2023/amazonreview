@@ -3,3 +3,4 @@ _references/
 .vercel/
 node_modules/
 *.log
+.env*
